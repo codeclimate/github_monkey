@@ -5,6 +5,8 @@ require "uri"
 class MakePullRequest
   attr_reader :prefix, :index, :duration_secs, :will_merge, :commit_count, :comment_count, :files_count, :branch_name, :action_interval, :pr_number
 
+  CommandError = Class.new(StandardError)
+
   LOREM_IPSUM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.".freeze
 
   def initialize(index:, duration_secs:, will_merge:, commit_count:, comment_count:, files_count:)
@@ -78,9 +80,16 @@ class MakePullRequest
         File.open(path, "w") { |fh| fh.write(commit_contents) }
         run_cmd("git add #{path}")
       end
+
       run_cmd("git commit -m '#{commit_message}'")
       run_cmd("git push origin #{branch_name}")
     }
+  rescue CommandError => ex
+    if /working tree clean/ =~ ex.message
+      $logger.warn "#{log_tag} commit randomly happend to not change repo at all"
+    else
+      raise ex
+    end
   end
 
   def open_pull_request
@@ -150,7 +159,7 @@ class MakePullRequest
       exit_code = wait_thr.value.exitstatus
 
       if exit_code > 0
-        raise "`#{cmd}` exited with #{exit_code}: stdout=#{stdout.read} stderr=#{stderr.read}"
+        raise CommandError, "`#{cmd}` exited with #{exit_code}: stdout=#{stdout.read} stderr=#{stderr.read}"
       end
     end
   end
