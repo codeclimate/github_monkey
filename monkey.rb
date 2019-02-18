@@ -58,7 +58,7 @@ Dir.chdir($opts.fetch(:repo))
 $logger.debug "Current directory is #{Dir.pwd}"
 
 def schedule_days_prs
-  pr_count = $opts.fetch(:daily_prs).sample
+  pr_count = $opts.fetch(:daily_prs).to_a.sample
   # scale pr count if script is started in middle of day
   day_pct_left = (DAY_LENGTH - (Time.now.hour - WORK_HOURS.first)).to_f / DAY_LENGTH
   pr_count = (pr_count * day_pct_left).round
