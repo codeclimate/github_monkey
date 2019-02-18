@@ -120,7 +120,7 @@ class MakePullRequest
   end
 
   def commit_contents
-    lines = rand(100)
+    lines = RandomGaussian.from_range(1..100)
 
     lines.times.map do |idx|
       "puts \"#{idx}\""

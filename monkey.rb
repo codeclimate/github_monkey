@@ -8,6 +8,7 @@ require "pry" # for debugging
 
 require_relative "lib/github_client"
 require_relative "lib/make_pull_request"
+require_relative "lib/random_gaussian"
 
 WORK_HOURS = 9..18
 DAY_LENGTH = WORK_HOURS.last - WORK_HOURS.first
@@ -80,9 +81,9 @@ def schedule_pr(idx)
       index: idx,
       duration_secs: rand(secs_left_in_day),
       will_merge: rand <= $opts.fetch(:merge_rate),
-      commit_count: $opts.fetch(:commits_per_pr).to_a.sample,
-      comment_count: $opts.fetch(:comments_per_pr).to_a.sample,
-      files_count: $opts.fetch(:files_per_pr).to_a.sample,
+      commit_count: RandomGaussian.from_range($opts.fetch(:commits_per_pr)),
+      comment_count: RandomGaussian.from_range($opts.fetch(:comments_per_pr)),
+      files_count: RandomGaussian.from_range($opts.fetch(:files_per_pr)),
     ).run
   end
 end
@@ -113,9 +114,9 @@ def run_ludicrous_mode
       index: idx,
       duration_secs: 0,
       will_merge: rand <= $opts.fetch(:merge_rate),
-      commit_count: $opts.fetch(:commits_per_pr).to_a.sample,
-      comment_count: $opts.fetch(:comments_per_pr).to_a.sample,
-      files_count: $opts.fetch(:files_per_pr).to_a.sample,
+      commit_count: RandomGaussian.from_range($opts.fetch(:commits_per_pr)),
+      comment_count: RandomGaussian.from_range($opts.fetch(:comments_per_pr)),
+      files_count: RandomGaussian.from_range($opts.fetch(:files_per_pr)),
     ).run
     idx += 1
   end
