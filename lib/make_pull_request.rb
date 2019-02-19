@@ -79,9 +79,10 @@ class MakePullRequest
     $repo_lock.synchronize {
       run_cmd("git checkout #{branch_name}")
       files_count.times do |file_idx|
-        path = "#{branch_name.gsub("/", "-")}-file-#{file_idx}"
+        path = "#{branch_name}/file-#{file_idx}"
+        run_cmd("mkdir -p '#{File.dirname(path)}'")
         File.open(path, "w") { |fh| fh.write(commit_contents) }
-        run_cmd("git add #{path}")
+        run_cmd("git add '#{path}'")
       end
 
       run_cmd("git commit -m '#{commit_message}'")
