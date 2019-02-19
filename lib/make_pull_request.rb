@@ -59,8 +59,11 @@ class MakePullRequest
     end
 
     if will_merge
-      $logger.info "#{log_tag} Writing commit"
+      $logger.info "#{log_tag} Merging PR"
       api_client.merge_pull_request(number: pr_number)
+    else
+      $logger.info "#{log_tag} Closing PR"
+      api_client.close_pull_request(number: pr_number)
     end
   end
 

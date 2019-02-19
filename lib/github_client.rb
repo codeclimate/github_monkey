@@ -57,6 +57,12 @@ class GithubClient
     end
   end
 
+  def close_pull_request(number: pr_number)
+    path = "/repos/#{repo_slug}/pulls/#{number}"
+    body = { state: "closed" }
+    patch_body(path, body)
+  end
+
   private
 
   def request_uri(path)
@@ -83,6 +89,22 @@ class GithubClient
     uri = request_uri(path)
 
     req = Net::HTTP::Post.new(uri)
+    add_headers(req)
+    req.body = JSON.pretty_generate(body)
+
+    res = make_request(req)
+
+    if res.code.to_i >= 200 && res.code.to_i < 300
+      return JSON.parse(res.body)
+    else
+      raise RequestError, "request failed to #{req.uri}: #{res.inspect}"
+    end
+  end
+
+  def patch_body(path, body)
+    uri = request_uri(path)
+
+    req = Net::HTTP::Patch.new(uri)
     add_headers(req)
     req.body = JSON.pretty_generate(body)
 
