@@ -22,7 +22,7 @@ $opts = {
   token: nil,
   api_host: "https://api.github.com/",
   daily_prs: 35..45,
-  merge_rate: 0.8,
+  merge_rate: 0.85,
   files_per_pr: 1..20,
   commits_per_pr: 1..8,
   comments_per_pr: 0..10,
