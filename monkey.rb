@@ -13,6 +13,8 @@ require_relative "lib/random_gaussian"
 WORK_HOURS = 9..18
 DAY_LENGTH = WORK_HOURS.last - WORK_HOURS.first
 
+Thread.abort_on_exception = true
+
 $logger = Logger.new(STDOUT)
 $logger.level = Logger::DEBUG
 
@@ -65,7 +67,7 @@ def schedule_days_prs
   pr_count = (pr_count * day_pct_left).round
 
   $logger.debug "[main] Going to generate #{pr_count} pull requests on #{Date.today}"
-  pr_count.times { |idx| schedule_pr(idx) }
+  pr_count.times.map { |idx| schedule_pr(idx) }.map(&:join)
 end
 
 def end_of_day

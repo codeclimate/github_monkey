@@ -25,7 +25,7 @@ class MakePullRequest
       else
         action_count = commit_count + comment_count + 1 # 1 for pr open
         action_count += 1 if will_merge
-        duration.to_f / action_count
+        duration_secs.to_f / action_count
       end
   end
 
@@ -61,9 +61,11 @@ class MakePullRequest
     if will_merge
       $logger.info "#{log_tag} Merging PR"
       api_client.merge_pull_request(number: pr_number)
+      api_client.delete_branch(branch: branch_name)
     else
       $logger.info "#{log_tag} Closing PR"
       api_client.close_pull_request(number: pr_number)
+      api_client.delete_branch(branch: branch_name)
     end
   end
 

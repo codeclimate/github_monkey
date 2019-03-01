@@ -13,6 +13,32 @@ class GithubClient
     @repo_slug = repo_slug
   end
 
+  def each_open_pull_request
+    next_page_url = request_uri("/repos/#{repo_slug}/pulls")
+
+    while next_page_url
+      puts "processing #{next_page_url}"
+      req = Net::HTTP::Get.new(next_page_url)
+      add_headers(req)
+
+      res = make_request(req)
+      prs = JSON.parse(res.body)
+
+      prs.each do |pr|
+        yield pr
+      end
+
+      if res["link"] && res["link"].include?('rel="next"')
+        links = res["link"].split(",")
+        next_link = links.find { |l| l.include?('rel="next"') }
+        uri = next_link.match(%r{<(.+)>})[1]
+        next_page_url = URI.parse(uri)
+      else
+        next_page_url = nil
+      end
+    end
+  end
+
   def open_pull_request(branch:, title:, body:)
     path = "repos/#{repo_slug}/pulls"
     body = {
@@ -57,10 +83,17 @@ class GithubClient
     end
   end
 
-  def close_pull_request(number: pr_number)
+  def close_pull_request(number:)
     path = "/repos/#{repo_slug}/pulls/#{number}"
     body = { state: "closed" }
     patch_body(path, body)
+  end
+
+  def delete_branch(branch:)
+    uri = request_uri("/repos/#{repo_slug}/git/refs/heads/#{branch}")
+    req = Net::HTTP::Delete.new(uri)
+    add_headers(req)
+    make_request(req)
   end
 
   private
