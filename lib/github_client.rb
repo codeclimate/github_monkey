@@ -73,13 +73,15 @@ class GithubClient
         merged = true
       elsif res.code.to_i == 405 # "not mergeable (yet?)"
         # do nothing
+      elsif res.code.to_i == 500 # WTF?
+        # do nothing
       else
         raise RequestError, "request failed to #{req.uri}: #{res.inspect}"
       end
     end
 
     if !merged && merge_attempts > MAX_MERGE_ATTEMPTS
-      logger.error("Could not merge PR ##{pr_number} on branch #{branch_name}")
+      $logger.error("Could not merge PR ##{number}")
     end
   end
 
